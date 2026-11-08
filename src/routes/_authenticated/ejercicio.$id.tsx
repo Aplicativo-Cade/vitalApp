@@ -39,13 +39,13 @@ function Detail() {
   return (
     <div className="fade-up print:m-0 print:p-0">
       {/* Imagem de Capa (Compacta na impressão) */}
-      <div className="relative print:max-h-[220px] print:overflow-hidden">
+      <div className="relative print:max-h-[500px] print:overflow-hidden">
         <img 
           src={ex.image} 
           alt={ex.title} 
           width={1024} 
           height={768} 
-          className="aspect-[16/9] md:aspect-[4/3] w-full object-cover md:rounded-b-[2rem] print:rounded-none print:h-[200px]" 
+          className="aspect-[16/9] md:aspect-[4/3] w-full object-cover md:rounded-b-[2rem] print:rounded-none print:h-[500px]" 
         />
         <div className="no-print absolute inset-x-0 top-0 flex justify-between p-4">
           <Link to="/inicio" className="glass flex h-10 w-10 items-center justify-center rounded-full border border-border" aria-label="Volver">
@@ -55,13 +55,13 @@ function Detail() {
       </div>
 
       {/* Conteúdo Principal */}
-      <div className="relative -mt-8 rounded-t-[2rem] bg-background px-6 pt-7 print:mt-0 print:px-4 print:pt-3 print:bg-white print:text-black">
+      <div className="relative -mt-8 rounded-t-[2rem] bg-background px-6 pt-7 print:mt-0 print:px-4 print:pt-3 print:bg-glass print:text-black">
         
         {/* Cabeçalho / Metadados */}
         <div className="flex items-center gap-2 print:text-xs">
           <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground print:text-zinc-600">{ex.category}</span>
           <span className="h-1 w-1 rounded-full bg-border print:bg-zinc-400" />
-          <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground print:bg-zinc-100 print:text-zinc-800">Nivel: {ex.level}</span>
+          <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground print:bg-accent print:text-accent-foreground">Nivel: {ex.level}</span>
           <span className="ml-auto text-xs text-muted-foreground print:text-zinc-600">{ex.minutes} min</span>
         </div>
         
@@ -101,7 +101,7 @@ function Detail() {
             </ul>
           </section>
 
-          <section className="rounded-xl border border-gold/40 bg-gold/10 p-3 print:border-amber-300 print:bg-amber-50/50">
+          <section className="rounded-xl border border-gold/40 bg-gold/10 p-3 print:border-gold/40 print:bg-gold/10">
             <h2 className="flex items-center gap-1.5 text-sm font-semibold print:text-xs uppercase tracking-wide text-foreground print:text-amber-900">
               <ShieldAlert className="h-3.5 w-3.5 text-gold print:text-amber-600" /> Precauciones
             </h2>
@@ -125,7 +125,7 @@ function Detail() {
         </section>
 
         {/* Consejo del terapeuta */}
-        <section className="bg-hero mt-4 rounded-2xl p-4 text-primary-foreground print:mt-3 print:bg-emerald-900 print:text-white print:p-3">
+        <section className="bg-hero mt-4 rounded-2xl p-4 text-primary-foreground print:mt-3 print:bg-hero print:text-white print:p-3">
           <div className="flex items-center gap-2">
             <Quote className="h-4 w-4 opacity-60" />
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] opacity-80">Consejo del terapeuta</p>
