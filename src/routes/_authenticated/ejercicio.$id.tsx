@@ -37,9 +37,16 @@ function Detail() {
   };
 
   return (
-    <div className="fade-up">
-      <div className="relative">
-        <img src={ex.image} alt={ex.title} width={1024} height={768} className="aspect-[4/3] w-full object-cover md:rounded-b-[2rem]" />
+    <div className="fade-up print:m-0 print:p-0">
+      {/* Imagem de Capa (Compacta na impressão) */}
+      <div className="relative print:max-h-[220px] print:overflow-hidden">
+        <img 
+          src={ex.image} 
+          alt={ex.title} 
+          width={1024} 
+          height={768} 
+          className="aspect-[16/9] md:aspect-[4/3] w-full object-cover md:rounded-b-[2rem] print:rounded-none print:h-[200px]" 
+        />
         <div className="no-print absolute inset-x-0 top-0 flex justify-between p-4">
           <Link to="/inicio" className="glass flex h-10 w-10 items-center justify-center rounded-full border border-border" aria-label="Volver">
             <ArrowLeft className="h-4 w-4" />
@@ -47,67 +54,88 @@ function Detail() {
         </div>
       </div>
 
-      <div className="relative -mt-8 rounded-t-[2rem] bg-background px-6 pt-7">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{ex.category}</span>
-          <span className="h-1 w-1 rounded-full bg-border" />
-          <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">Nivel: {ex.level}</span>
-          <span className="ml-auto text-xs text-muted-foreground">{ex.minutes} min</span>
+      {/* Conteúdo Principal */}
+      <div className="relative -mt-8 rounded-t-[2rem] bg-background px-6 pt-7 print:mt-0 print:px-4 print:pt-3 print:bg-white print:text-black">
+        
+        {/* Cabeçalho / Metadados */}
+        <div className="flex items-center gap-2 print:text-xs">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground print:text-zinc-600">{ex.category}</span>
+          <span className="h-1 w-1 rounded-full bg-border print:bg-zinc-400" />
+          <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground print:bg-zinc-100 print:text-zinc-800">Nivel: {ex.level}</span>
+          <span className="ml-auto text-xs text-muted-foreground print:text-zinc-600">{ex.minutes} min</span>
         </div>
-        <h1 className="mt-3 text-[2.4rem] leading-[1.05]">{ex.title}</h1>
+        
+        <h1 className="mt-2 text-[2.2rem] leading-[1.05] print:text-2xl print:font-bold print:text-zinc-900">{ex.title}</h1>
 
-        <div className="mt-8 grid grid-cols-2 gap-3">
-          <div className="rounded-2xl bg-card p-4 shadow-soft">
-            <Target className="h-4 w-4 text-primary" strokeWidth={1.6} />
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Objetivo</p>
-            <p className="mt-1 text-sm leading-relaxed">{ex.objective}</p>
+        {/* Grid de Objetivo e Materiais */}
+        <div className="mt-4 grid grid-cols-2 gap-3 print:gap-2">
+          <div className="rounded-2xl bg-card p-3.5 shadow-soft print:bg-zinc-50 print:border print:border-zinc-200 print:p-2.5">
+            <div className="flex items-center gap-1.5 text-primary print:text-emerald-800">
+              <Target className="h-4 w-4" strokeWidth={1.6} />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">Objetivo</span>
+            </div>
+            <p className="mt-1 text-xs leading-relaxed print:text-zinc-700">{ex.objective}</p>
           </div>
-          <div className="rounded-2xl bg-card p-4 shadow-soft">
-            <Package className="h-4 w-4 text-primary" strokeWidth={1.6} />
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Materiales</p>
-            <ul className="mt-1 space-y-1 text-sm">
-              {ex.materials.map((m) => <li key={m}>{m}</li>)}
+          
+          <div className="rounded-2xl bg-card p-3.5 shadow-soft print:bg-zinc-50 print:border print:border-zinc-200 print:p-2.5">
+            <div className="flex items-center gap-1.5 text-primary print:text-emerald-800">
+              <Package className="h-4 w-4" strokeWidth={1.6} />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">Materiales</span>
+            </div>
+            <ul className="mt-1 space-y-0.5 text-xs print:text-zinc-700">
+              {ex.materials.map((m) => <li key={m}>• {m}</li>)}
             </ul>
           </div>
         </div>
 
-        <section className="mt-8">
-          <h2 className="text-xl">Indicaciones</h2>
-          <ul className="mt-3 space-y-2">
-            {ex.indications.map((i) => (
-              <li key={i} className="flex gap-2.5 text-sm"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{i}</li>
-            ))}
-          </ul>
-        </section>
+        {/* Seção Indicaciones e Precauciones lado a lado na impressão para economizar espaço */}
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 print:grid-cols-2">
+          <section className="rounded-xl bg-card/50 p-3 print:bg-zinc-50 print:border print:border-zinc-200">
+            <h2 className="text-sm font-semibold print:text-xs uppercase tracking-wide text-foreground print:text-zinc-900">Indicaciones</h2>
+            <ul className="mt-1.5 space-y-1">
+              {ex.indications.map((i) => (
+                <li key={i} className="flex gap-2 text-xs print:text-[11px] text-muted-foreground print:text-zinc-700">
+                  <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary print:text-emerald-700" />{i}
+                </li>
+              ))}
+            </ul>
+          </section>
 
-        <section className="mt-6 rounded-2xl border border-gold/40 bg-gold/10 p-4">
-          <h2 className="flex items-center gap-2 text-lg"><ShieldAlert className="h-4 w-4 text-gold" /> Precauciones de seguridad</h2>
-          <ul className="mt-2 space-y-1.5 text-sm text-foreground/85">
-            {ex.precautions.map((p) => <li key={p}>— {p}</li>)}
-          </ul>
-        </section>
+          <section className="rounded-xl border border-gold/40 bg-gold/10 p-3 print:border-amber-300 print:bg-amber-50/50">
+            <h2 className="flex items-center gap-1.5 text-sm font-semibold print:text-xs uppercase tracking-wide text-foreground print:text-amber-900">
+              <ShieldAlert className="h-3.5 w-3.5 text-gold print:text-amber-600" /> Precauciones
+            </h2>
+            <ul className="mt-1.5 space-y-1 text-xs print:text-[11px] text-foreground/85 print:text-amber-900/80">
+              {ex.precautions.map((p) => <li key={p}>— {p}</li>)}
+            </ul>
+          </section>
+        </div>
 
-        <section className="mt-8">
-          <h2 className="text-xl">Paso a paso</h2>
-          {/* Layout alterado para Flexbox adaptativo sem carrossel horizontal */}
-          <div className="mt-4 flex flex-wrap gap-3 print:flex-col print:px-0">
+        {/* Paso a paso - Compacto e horizontal na impressão */}
+        <section className="mt-4 print:mt-3">
+          <h2 className="text-lg font-semibold print:text-sm">Paso a paso</h2>
+          <div className="mt-2 flex flex-wrap gap-2 print:flex-nowrap print:gap-2">
             {ex.steps.map((s, i) => (
-              <div key={i} className="flex-1 min-w-[240px] rounded-2xl bg-card p-5 shadow-soft print:w-full">
-                <span className="font-display text-4xl text-primary/30">{String(i + 1).padStart(2, "0")}</span>
-                <p className="mt-3 text-sm leading-relaxed">{s}</p>
+              <div key={i} className="flex-1 min-w-[200px] rounded-xl bg-card p-3 shadow-soft print:bg-zinc-50 print:border print:border-zinc-200 print:p-2.5">
+                <span className="font-display text-2xl text-primary/30 print:text-emerald-700/40">{String(i + 1).padStart(2, "0")}</span>
+                <p className="mt-1 text-xs leading-tight print:text-[11px] print:text-zinc-700">{s}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="bg-hero mt-8 rounded-[1.6rem] p-6 text-primary-foreground">
-          <Quote className="h-5 w-5 opacity-60" />
-          <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.14em] opacity-70">Consejo del terapeuta</p>
-          <p className="mt-2 font-display text-xl leading-snug">{ex.tip}</p>
+        {/* Consejo del terapeuta */}
+        <section className="bg-hero mt-4 rounded-2xl p-4 text-primary-foreground print:mt-3 print:bg-emerald-900 print:text-white print:p-3">
+          <div className="flex items-center gap-2">
+            <Quote className="h-4 w-4 opacity-60" />
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] opacity-80">Consejo del terapeuta</p>
+          </div>
+          <p className="mt-1 font-display text-sm leading-snug print:text-xs">{ex.tip}</p>
         </section>
       </div>
 
-      <div className="no-print sticky bottom-24 lg:bottom-1 z-20 mt-8 flex gap-2 px-6">
+      {/* Botões de Ação (Ocultos na impressão) */}
+      <div className="no-print sticky bottom-24 lg:bottom-1 z-20 mt-6 flex gap-2 px-6 pb-6">
         <Button variant="hero" size="lg" className="h-12 flex-1" onClick={() => setSave(true)}>
           <Bookmark /> Añadir a colección
         </Button>
