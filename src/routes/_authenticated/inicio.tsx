@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Search, X, Sparkles, Bookmark } from "lucide-react";
-import { CATEGORIES, EXERCISES, filterExpress, type ExpressFilters } from "@/lib/exercises";
+import { CATEGORIES, filterExpress, type ExpressFilters } from "@/lib/exercises";
+import { useExercises } from "@/integrations/supabase/useExercises";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import { ExpressSheet } from "@/components/ExpressSheet";
 import { SaveToCollection } from "@/components/SaveToCollection";
@@ -38,21 +39,25 @@ function Inicio() {
   const [saveIds, setSaveIds] = useState<string[] | null>(null);
   const { data: collections } = useCollections();
 
+  // 1. Busca os exercícios da tabela public.exercises no Supabase
+  const { data: exercises = [], isLoading } = useExercises();
+
   const savedSet = useMemo(() => new Set(collections?.flatMap((c) => c.items.map((i) => i.exercise_id))), [collections]);
-  const searching = query !== debounced;
+  const searching = query !== debounced || isLoading;
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(query), 350);
     return () => clearTimeout(t);
   }, [query]);
 
+  // 2. Aplica os filtros sobre os dados vindos do Supabase
   const list = useMemo(() => {
-    let l = express ? filterExpress(EXERCISES, express) : EXERCISES;
-    if (cat !== "Todos") l = l.filter((e) => e.category === cat);
+    let l = express ? filterExpress(exercises, express) : exercises;
+    if (cat !== "Todos") l = l.filter((e:any) => e.category === cat);
     const q = debounced.trim().toLowerCase();
-    if (q) l = l.filter((e) => (e.title + e.category + e.objective + e.focus).toLowerCase().includes(q));
+    if (q) l = l.filter((e: any) => (e.title + e.category + e.objective + e.focus).toLowerCase().includes(q));
     return l;
-  }, [express, cat, debounced]);
+  }, [exercises, express, cat, debounced]);
 
   const toggleSel = (id: string) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
@@ -105,7 +110,7 @@ function Inicio() {
             <span className="opacity-70">· {list.length} ejercicios</span>
           </div>
           <div className="flex items-center gap-3 text-xs font-semibold">
-            <button onClick={() => setSelected(selected.length === list.length ? [] : list.map((e) => e.id))} className="underline-offset-4 hover:underline">
+            <button onClick={() => setSelected(selected.length === list.length ? [] : list.map((e:any) => e.id))} className="underline-offset-4 hover:underline">
               {selected.length === list.length && list.length > 0 ? "Deseleccionar" : "Seleccionar todos"}
             </button>
             <button onClick={() => { setExpress(null); setSelected([]); }} aria-label="Quitar sesión exprés">
@@ -126,7 +131,7 @@ function Inicio() {
                 </div>
               </div>
             ))
-          : list.map((ex, i) => (
+          : list.map((ex:any, i:any) => (
               <ExerciseCard
                 key={ex.id}
                 ex={ex}
