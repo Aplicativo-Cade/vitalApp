@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Search, X, Sparkles, Bookmark } from "lucide-react";
-import { CATEGORIES, filterExpress, type ExpressFilters } from "@/lib/exercises";
+import { filterExpress, type ExpressFilters } from "@/lib/exercises";
+import { useUserLibrary } from "@/lib/useUserLibrary";
 import { useExercises } from "@/integrations/supabase/useExercises";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import { ExpressSheet } from "@/components/ExpressSheet";
@@ -32,7 +33,7 @@ function Inicio() {
   const name = (user.user_metadata?.["full_name"] as string | undefined)?.split(" ")[0] ?? user.email?.split("@")[0];
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
-  const [cat, setCat] = useState<string>("Todos");
+  const [selectedTomeId, setSelectedTomeId] = useState("Todos");
   const [sheet, setSheet] = useState(false);
   const [express, setExpress] = useState<ExpressFilters | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
@@ -40,62 +41,68 @@ function Inicio() {
   const { data: collections } = useCollections();
 
   // 1. Busca os exercícios da tabela public.exercises no Supabase
-  const { data: exercises = [], isLoading } = useExercises();
+  const {
+  data: library,
+  isLoading,
+  error,
+} = useUserLibrary(user.id);
+
+  const exercises = library?.exercises ?? [];
+  const tomes = library?.tomes ?? [];
 
   const savedSet = useMemo(() => new Set(collections?.flatMap((c) => c.items.map((i) => i.exercise_id))), [collections]);
+
   const searching = query !== debounced || isLoading;
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(query), 350);
     return () => clearTimeout(t);
   }, [query]);
-
-  // 2. Aplica os filtros sobre os dados vindos do Supabase
   
-// Normaliza textos para pesquisar sem problemas com acentos
-const normalizeSearch = (value: unknown) =>
-  String(value ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, " ");
+  // Normaliza textos para pesquisar sem problemas com acentos
+  const normalizeSearch = (value: unknown) =>
+    String(value ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, " ");
 
-// Aplica a pesquisa e os filtros sobre os dados do Supabase
-const list = useMemo(() => {
-  const q = normalizeSearch(debounced);
+  // Aplica a pesquisa e os filtros sobre os dados do Supabase
+  const list = useMemo(() => {
+    const q = normalizeSearch(debounced);
 
-  // Quando existe uma pesquisa, procura em TODOS os exercícios,
-  // independentemente da categoria ou da sessão expressa.
-  if (q) {
-    return exercises.filter((e) => {
-      const searchableText = normalizeSearch([
-        e.title,
-        e.category,
-        e.objective,
-        e.focus,
-        e.level,
-        e.tome_id,
-      ].join(" "));
+    // Quando existe uma pesquisa, procura em TODOS os exercícios,
+    // independentemente da categoria ou da sessão expressa.
+    if (q) {
+      return exercises.filter((e) => {
+        const searchableText = normalizeSearch([
+          e.title,
+          e.category,
+          e.objective,
+          e.focus,
+          e.level,
+          e.tome_id,
+        ].join(" "));
 
-      return searchableText.includes(q);
-    });
-  }
+        return searchableText.includes(q);
+      });
+    }
 
-  // Sem pesquisa, mantém o comportamento original dos filtros.
-  let filtered = express
-    ? filterExpress(exercises, express)
-    : exercises;
+    // Sem pesquisa, mantém o comportamento original dos filtros.
+    let filtered = express
+      ? filterExpress(exercises, express)
+      : exercises;
 
-  if (cat !== "Todos") {
-    filtered = filtered.filter(
-      (e) => normalizeSearch(e.category) === normalizeSearch(cat)
-    );
-  }
+    // O filtro utiliza o ID real do tomo.
+    if (selectedTomeId !== "Todos") {
+      filtered = filtered.filter(
+        (e) => e.tome_id === selectedTomeId
+      );
+    }
 
-  return filtered;
-}, [exercises, express, cat, debounced]);
-
+    return filtered;
+  }, [exercises, express, selectedTomeId, debounced]);
 
   const toggleSel = (id: string) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
@@ -125,16 +132,30 @@ const list = useMemo(() => {
       <div className="fade-up mt-6 flex items-center gap-3" style={{ animationDelay: "120ms" }}>
         <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Filtrar por:</span>
         <div className="no-scrollbar -mr-5 flex gap-2 overflow-x-auto pr-5">
-          {CATEGORIES.map((c) => (
+          <button
+            key="Todos"
+            onClick={() => setSelectedTomeId("Todos")}
+            className={cn(
+              "shrink-0 rounded-full border px-4 py-1.5 text-sm transition-all duration-300",
+              selectedTomeId === "Todos"
+                ? "border-foreground bg-accent text-muted-foreground"
+                : "border-border text-muted-foreground hover:border-foreground/40",
+            )}
+          >
+            Todos
+          </button>
+          {tomes.map((tome) => (
             <button
-              key={c}
-              onClick={() => setCat(c)}
+              key={tome.id}
+              onClick={() => setSelectedTomeId(tome.id)}
               className={cn(
                 "shrink-0 rounded-full border px-4 py-1.5 text-sm transition-all duration-300",
-                cat === c ? "border-foreground bg-accent text-muted-foreground" : "border-border text-muted-foreground hover:border-foreground/40",
+                selectedTomeId === tome.id
+                  ? "border-foreground bg-accent text-muted-foreground"
+                  : "border-border text-muted-foreground hover:border-foreground/40",
               )}
             >
-              {c}
+              {tome.title}
             </button>
           ))}
         </div>
@@ -211,7 +232,7 @@ const list = useMemo(() => {
         onClose={() => setSheet(false)}
         onGenerate={(f) => {
           setExpress(f);
-          setCat("Todos");
+          setSelectedTomeId("Todos");
           setSelected([]);
           setSheet(false);
         }}

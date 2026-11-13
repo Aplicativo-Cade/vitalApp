@@ -90,8 +90,7 @@ const google = async () => {
       <div className="flex min-h-screen flex-col px-7 pt-14 pb-10 md:justify-center md:px-16">
         <div className="fade-up mx-auto w-full max-w-sm">
           <div className="flex items-center gap-2 text-primary">
-            <Leaf className="h-5 w-5" strokeWidth={1.6} />
-            <span className="font-display text-2xl">Vital</span>
+            <img src='https://res.cloudinary.com/xiupvhfs/image/upload/v1794531774/Design_sem_nome.png' alt="" className="h-15 w-15" />
           </div>
 
           <h1 className="mt-14 text-[2.6rem] leading-[1.05] text-foreground">
