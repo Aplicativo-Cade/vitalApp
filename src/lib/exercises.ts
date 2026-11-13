@@ -1,8 +1,3 @@
-import sentado from "@/assets/ex-sentado.jpg";
-import estiramiento from "@/assets/ex-estiramiento.jpg";
-import grupal from "@/assets/ex-grupal.jpg";
-import cognitivo from "@/assets/ex-cognitivo.jpg";
-
 export const CATEGORIES = [
   "Todos",
   "Físico",
@@ -11,7 +6,15 @@ export const CATEGORIES = [
   "Cognitivo",
   "Dinámicas",
 ] as const;
-export type Category = Exclude<(typeof CATEGORIES)[number], "Todos">;
+
+export type Category =
+  | Exclude<(typeof CATEGORIES)[number], "Todos">
+  | "Flexibilidad"
+  | "Equilibrio"
+  | "Fortalecimiento"
+  | "Funcional"
+  | "Movilidad"
+  | "Dinámicas";
 
 export type Condition = "Autónomo" | "Movilidad reducida" | "Deterioro cognitivo";
 export type Focus = "Fuerza" | "Equilibrio" | "Flexibilidad" | "Memoria" | "Socialización";
@@ -22,7 +25,7 @@ export interface Exercise {
   category: Category;
   level: string;
   minutes: number;
-  conditions: Condition[];
+  conditions: string[] | string;
   focus: Focus;
   image: string;
   objective: string;
@@ -31,6 +34,7 @@ export interface Exercise {
   precautions: string[];
   steps: string[];
   tip: string;
+  tome_id: string;
 }
 
 export const TIME_OPTIONS = ["≤ 10 min", "10–20 min", "> 20 min"] as const;

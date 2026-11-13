@@ -51,13 +51,51 @@ function Inicio() {
   }, [query]);
 
   // 2. Aplica os filtros sobre os dados vindos do Supabase
-  const list = useMemo(() => {
-    let l = express ? filterExpress(exercises, express) : exercises;
-    if (cat !== "Todos") l = l.filter((e:any) => e.category === cat);
-    const q = debounced.trim().toLowerCase();
-    if (q) l = l.filter((e: any) => (e.title + e.category + e.objective + e.focus).toLowerCase().includes(q));
-    return l;
-  }, [exercises, express, cat, debounced]);
+  
+// Normaliza textos para pesquisar sem problemas com acentos
+const normalizeSearch = (value: unknown) =>
+  String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ");
+
+// Aplica a pesquisa e os filtros sobre os dados do Supabase
+const list = useMemo(() => {
+  const q = normalizeSearch(debounced);
+
+  // Quando existe uma pesquisa, procura em TODOS os exercícios,
+  // independentemente da categoria ou da sessão expressa.
+  if (q) {
+    return exercises.filter((e) => {
+      const searchableText = normalizeSearch([
+        e.title,
+        e.category,
+        e.objective,
+        e.focus,
+        e.level,
+        e.tome_id,
+      ].join(" "));
+
+      return searchableText.includes(q);
+    });
+  }
+
+  // Sem pesquisa, mantém o comportamento original dos filtros.
+  let filtered = express
+    ? filterExpress(exercises, express)
+    : exercises;
+
+  if (cat !== "Todos") {
+    filtered = filtered.filter(
+      (e) => normalizeSearch(e.category) === normalizeSearch(cat)
+    );
+  }
+
+  return filtered;
+}, [exercises, express, cat, debounced]);
+
 
   const toggleSel = (id: string) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
